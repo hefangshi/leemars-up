@@ -1,27 +1,41 @@
 'use strict';
-
+global.Promise = require('bluebird');
 const WebSocket = require('ws');
-const fs = require('fs');
 const path = require('path');
 const PERSISTENT_FILE = path.join(__dirname, 'PERSISTENT_FILE.json');
 const LEEMARS_UID = 16888043;
 const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
-
+const Datastore = require('nedb');
+const db = new Datastore({
+  filename: PERSISTENT_FILE,
+  autoload: true
+});
 const AppearInGroupHandler = require('./lib/appear').AppearInGroupHandler;
 
 class App {
-  constructor(url) {
+  constructor(url, db) {
     this.handlers = [];
     this.url = url;
+    this.db = db;
+    this.db.persistence.setAutocompactionInterval(30000);
   }
   use(handler) {
     this.handlers.push(handler);
+    handler.setApp(this);
   }
   onMsg(msg) {
     this.handlers.forEach(handler => {
       handler.onMsg(msg);
     });
+    this.dump().catch(console.error);
+  }
+  talk(to, type, msg) {
+    this.ws.send(JSON.stringify({
+      reply_to: to,
+      msg_type: type,
+      msg: msg
+    }));
   }
   run() {
     const self = this;
@@ -44,50 +58,45 @@ class App {
       }, 5 * 1000);
     });
   }
-  dump(fileName) {
-    const data = this.handlers.reduce((acc, handler) => {
-      acc[handler.id] = handler.dump();
-      return acc;
-    }, {});
-    fs.writeFileSync(fileName, JSON.stringify(data));
-    console.log('dump to', fileName);
-  }
-  load(fileName) {
-    try {
-      const data = JSON.parse(fs.readFileSync(fileName).toString());
-      this.handlers.forEach(handler => {
-        handler.load(data[handler.id]);
+  dump() {
+    const self = this;
+    const dump = this.handlers.map(handler => {
+      if (!handler.hasChange()) {
+        return;
+      }
+      return Promise.fromCallback(cb => {
+        self.db.update({
+          id: handler.id
+        }, handler.dump(), {upsert: true}, cb);
       });
-      console.log('persistent data loaded');
-    }
-    catch (e) {
-      console.error('read persistent data failed,', e.message);
-    }
+    });
+    return Promise.all(dump);
+  }
+  load() {
+    const self = this;
+    const load = this.handlers.map(handler => {
+      return Promise.fromCallback(cb => {
+        return self.db.findOne({
+          id: handler.id
+        }, cb);
+      }).then(doc => {
+        doc && handler.load(doc);
+      });
+    });
+    return Promise.all(load);
   }
 }
 
-const app = new App('ws://10.94.169.106:8999');
-app.use(new AppearInGroupHandler('APPEAR_IN_GROUP', [LEEMARS_UID, HEFANGSHI_UID], GROUP));
-app.load(PERSISTENT_FILE);
-app.run();
+const app = new App('ws://10.94.169.106:8999', db);
 
-process.on('exit', () => {
-  app.dump(PERSISTENT_FILE);
+const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP', [LEEMARS_UID], GROUP);
+findLeemars.on('appear', e => {
+  if (e.isFirstAppear) {
+    app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们！');
+  }
 });
 
-setInterval(() => {
-  app.dump(PERSISTENT_FILE);
-}, 60 * 1000);
-
-process.on('uncaughtException', (e) => {
-  console.error(e);
-  process.exit(1);
-});
-
-process.on('SIGINT', () => {
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  process.exit(0);
-});
+app.use(findLeemars);
+app.load().then(() => {
+  app.run();
+}).catch(console.error);
