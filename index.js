@@ -108,6 +108,6 @@ app.load().then(() => {
   return app.run();
 }).then(() => {
   if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
-    app.talk(HEFANGSHI_UID, 1, `我在 ${HOSTNAME} 启动啦！`);
+    app.talk(HEFANGSHI_UID, 1, `我在 ${HOSTNAME} 启动啦~`);
   }
 }).catch(console.error);
