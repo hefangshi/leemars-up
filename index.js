@@ -9,8 +9,8 @@ const BERG_UID = 13037728;
 const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
 const Datastore = require('nedb');
-const AppearInGroupHandler = require('./lib/appear').AppearInGroupHandler;
-const UidMapHandler = require('./lib/uidmap');
+const AppearInGroupHandler = require('./lib/handlers/appear').AppearInGroupHandler;
+const UidMapHandler = require('./lib/handlers/uidmap');
 const db = new Datastore({
   filename: PERSISTENT_FILE,
   autoload: true
@@ -54,7 +54,9 @@ class App {
         try {
           self.onMsg(JSON.parse(msg));
         }
-        catch (e) {}
+        catch (e) {
+          console.error(e);
+        }
       });
       self.ws.on('error', (err) => {
         console.error('ws connect failed', err);
@@ -65,29 +67,43 @@ class App {
       });
     });
   }
+  _update(query, data) {
+    const self = this;
+    return Promise.fromCallback(cb => {
+      self.db.update(query, data, {
+        upsert: true
+      }, cb);
+    });
+  }
   dump() {
     const self = this;
-    const dump = this.handlers.map(handler => {
+    const dumpTasks = this.handlers.map(handler => {
       if (!handler.hasChange()) {
         return;
       }
-      return Promise.fromCallback(cb => {
-        self.db.update({
-          id: handler.id
-        }, handler.dump(), {
-          upsert: true
-        }, cb);
-      });
+      const dumps = handler.dump();
+      let query = {
+        id: handler.id
+      };
+      if (handler.byDay) {
+        dumps.day = handler.today;
+        query.day = handler.today;
+      }
+      return self._update(query, dumps);
     });
-    return Promise.all(dump);
+    return Promise.all(dumpTasks);
   }
   load() {
     const self = this;
     const load = this.handlers.map(handler => {
       return Promise.fromCallback(cb => {
-        return self.db.findOne({
+        let query = {
           id: handler.id
-        }, cb);
+        };
+        if (handler.byDay) {
+          query.day = handler.today;
+        }
+        return self.db.findOne(query, cb);
       }).then(doc => {
         doc && handler.load(doc);
       });
@@ -97,7 +113,7 @@ class App {
 }
 
 const app = new App('ws://10.94.169.106:8999', db);
-const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP', '*', GROUP);
+const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + HEFANGSHI_UID, '*', HEFANGSHI_UID);
 findLeemars.on('appear', e => {
   if (e.isFirstAppear && e.id === LEEMARS_UID) {
     app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
