@@ -5,6 +5,7 @@ const path = require('path');
 const PERSISTENT_FILE = path.join(__dirname, 'PERSISTENT_FILE.json');
 const HOSTNAME = require('os').hostname();
 const LEEMARS_UID = 16888043;
+const BERG_UID = 13037728;
 const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
 const Datastore = require('nedb');
@@ -100,6 +101,9 @@ const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP', '*', GROUP);
 findLeemars.on('appear', e => {
   if (e.isFirstAppear && e.id === LEEMARS_UID) {
     app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
+  }
+  if (e.isFirstAppear && e.id === BERG_UID) {
+    app.talk(e.reply_to, e.type, '听说berg和群主有不可告人的秘♂密( ′_ゝ`)′_ゝ`)′_ゝ`)');
   }
 });
 
