@@ -7,11 +7,12 @@ const LEEMARS_UID = 16888043;
 const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
 const Datastore = require('nedb');
+const AppearInGroupHandler = require('./lib/appear').AppearInGroupHandler;
+
 const db = new Datastore({
   filename: PERSISTENT_FILE,
   autoload: true
 });
-const AppearInGroupHandler = require('./lib/appear').AppearInGroupHandler;
 
 class App {
   constructor(url, db) {
@@ -67,7 +68,9 @@ class App {
       return Promise.fromCallback(cb => {
         self.db.update({
           id: handler.id
-        }, handler.dump(), {upsert: true}, cb);
+        }, handler.dump(), {
+          upsert: true
+        }, cb);
       });
     });
     return Promise.all(dump);
@@ -88,10 +91,9 @@ class App {
 }
 
 const app = new App('ws://10.94.169.106:8999', db);
-
-const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP', [LEEMARS_UID], GROUP);
+const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP', '*', GROUP);
 findLeemars.on('appear', e => {
-  if (e.isFirstAppear) {
+  if (e.isFirstAppear && e.from === LEEMARS_UID) {
     app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们！');
   }
 });
