@@ -3,6 +3,7 @@ global.Promise = require('bluebird');
 const WebSocket = require('ws');
 const path = require('path');
 const PERSISTENT_FILE = path.join(__dirname, 'PERSISTENT_FILE.json');
+const HOSTNAME = require('os').hostname();
 const LEEMARS_UID = 16888043;
 const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
@@ -40,23 +41,27 @@ class App {
   }
   run() {
     const self = this;
-    this.ws = new WebSocket(this.url, {
-      protocolVersion: 13
-    });
-    this.ws.on('open', () => {
-      console.log('hiservice connected');
-    });
-    this.ws.on('message', (msg) => {
-      try {
-        self.onMsg(JSON.parse(msg));
-      }
-      catch (e) {}
-    });
-    this.ws.on('error', (err) => {
-      console.error('ws connect failed', err);
-      setTimeout(() => {
-        self.run();
-      }, 5 * 1000);
+    return new Promise((resolve, reject) => {
+      self.ws = new WebSocket(self.url, {
+        protocolVersion: 13
+      });
+      self.ws.on('open', () => {
+        console.log('hiservice connected');
+        resolve(self);
+      });
+      self.ws.on('message', (msg) => {
+        try {
+          self.onMsg(JSON.parse(msg));
+        }
+        catch (e) {}
+      });
+      self.ws.on('error', (err) => {
+        console.error('ws connect failed', err);
+        reject(err);
+        setTimeout(() => {
+          self.run();
+        }, 5 * 1000);
+      });
     });
   }
   dump() {
@@ -100,5 +105,9 @@ findLeemars.on('appear', e => {
 
 app.use(findLeemars);
 app.load().then(() => {
-  app.run();
+  return app.run();
+}).then(() => {
+  if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
+    app.talk(HEFANGSHI_UID, 1, `我在 ${HOSTNAME} 启动啦！`);
+  }
 }).catch(console.error);
