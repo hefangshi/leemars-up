@@ -113,7 +113,7 @@ class App {
 }
 
 const app = new App('ws://10.94.169.106:8999', db);
-const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + HEFANGSHI_UID, '*', HEFANGSHI_UID);
+const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + GROUP, '*', GROUP);
 findLeemars.on('appear', e => {
   if (e.isFirstAppear && e.id === LEEMARS_UID) {
     app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
