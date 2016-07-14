@@ -2,25 +2,28 @@
 global.Promise = require('bluebird');
 const WebSocket = require('ws');
 const path = require('path');
+const Datastore = require('nedb');
+const OpenApi = require('./lib/openapi');
 const PERSISTENT_FILE = path.join(__dirname, 'PERSISTENT_FILE.json');
 const HOSTNAME = require('os').hostname();
 const LEEMARS_UID = 16888043;
 const BERG_UID = 13037728;
 const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
-const Datastore = require('nedb');
 const AppearInGroupHandler = require('./lib/handlers/appear').AppearInGroupHandler;
 const UidMapHandler = require('./lib/handlers/uidmap');
+
 const db = new Datastore({
   filename: PERSISTENT_FILE,
   autoload: true
 });
 
 class App {
-  constructor(url, db) {
+  constructor(url, db, port) {
     this.handlers = [];
     this.url = url;
     this.db = db;
+    this.port = port;
     this.db.persistence.setAutocompactionInterval(30000);
   }
   use(handler) {
@@ -42,6 +45,7 @@ class App {
   }
   run() {
     const self = this;
+    new OpenApi(this.db, this.port).run();
     return new Promise((resolve, reject) => {
       self.ws = new WebSocket(self.url, {
         protocolVersion: 13
@@ -112,7 +116,7 @@ class App {
   }
 }
 
-const app = new App('ws://10.94.169.106:8999', db);
+const app = new App('ws://10.94.169.106:8999', db, 8998);
 const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + GROUP, '*', GROUP);
 findLeemars.on('appear', e => {
   if (e.isFirstAppear && e.id === LEEMARS_UID) {
