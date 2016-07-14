@@ -9,7 +9,7 @@ const HEFANGSHI_UID = 11725261;
 const GROUP = 1462626;
 const Datastore = require('nedb');
 const AppearInGroupHandler = require('./lib/appear').AppearInGroupHandler;
-
+const UidMapHandler = require('./lib/uidmap');
 const db = new Datastore({
   filename: PERSISTENT_FILE,
   autoload: true
@@ -104,6 +104,8 @@ findLeemars.on('appear', e => {
 });
 
 app.use(findLeemars);
+app.use(new UidMapHandler('UID_MAP'));
+
 app.load().then(() => {
   return app.run();
 }).then(() => {
