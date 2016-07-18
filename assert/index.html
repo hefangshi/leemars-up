@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>???</title>
+    <script type="text/javascript" src="http://as.alipayobjects.com/g/datavis/g2/1.2.5/index.js"></script>
+    <script type="text/javascript" src="http://as.alipayobjects.com/g/datavis/g-plugin-range/0.0.9/index.js"></script>
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+    <div id="c2"></div>
+    <div id="c3"></div>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            $.getJSON('/data/handler/UID_MAP?callback=?', function (data) {
+                const uidMap = data.data[0].uidmap;
+                $.getJSON('/data/handler/APPEAR_IN_GROUP_1462626?callback=?',function(data){
+                    let appearData = [];
+                    let whatEverDayStart = 0;
+                    data.data.forEach(appear => {
+                        const users = Object.keys(appear.appearTime);
+                        for (var i = 0; i < users.length; i++) {
+                            const user = users[i];
+                            appear.appearTime[user].timestamp.forEach((time, index) => {
+                                whatEverDayStart = appear.day;
+                                appearData.push({
+                                    name: uidMap[user],
+                                    time: new Date(appear.day + time),
+                                    isFirstAppeal: index === 0,
+                                    day: new Date(appear.day),
+                                    dayTime: time
+                                });
+                            })
+                        }
+                    });
+
+                    appearData = appearData.sort( (a,b) => {
+                        return a.time > b.time;
+                    });
+
+                    const leemars = appearData.filter( data => data.name === 'leemars528' && data.isFirstAppeal);
+                    if (leemars.length > 1) {
+                        const leemarsUp = new G2.Chart({
+                          id: 'c2',
+                          width : 1000,
+                          height : 250
+                        });
+                        leemarsUp.source(leemars, {
+                            day: {
+                              type: 'time',
+                              mask: 'yyyy-mm-dd w', // 指定时间的输出格式
+                              alias: 'Day'
+                            },
+                            time: {
+                              type: 'time',
+                              mask: 'yyyy-mm-dd HH:MM:ss', // 指定时间的输出格式
+                              alias: 'Time'
+                          },
+                            dayTime: {
+                              alias: 'Appear Time'
+                            },
+                            name: {
+                                alias: 'User'
+                            }
+                        });
+                        leemarsUp.axis('day',{
+                          grid: {
+                            line: {
+                              stroke: '#d9d9d9',
+                              'stroke-width': 2,
+                              'stroke-dasharray': [2, 6]
+                            }
+                          },
+                          gridAlign: 'left'
+                        });
+                        leemarsUp.axis('dayTime',{
+                          formatter: function (dimValue) {
+                            return new Date(whatEverDayStart + parseInt(dimValue, 10)).toLocaleTimeString()
+                          }
+                        });
+                        leemarsUp.legend(false);
+                        leemarsUp.line().position('day*dayTime').tooltip('time').color('dayTime').shape('smooth').size(2);
+                        leemarsUp.point().position('day*dayTime').tooltip('time').color('dayTime').shape('dayTime', ['circle', 'rect', 'diamond']).size(4);
+                        leemarsUp.tooltip(true, {
+                            title: null
+                        });
+                        leemarsUp.render();
+                    }
+
+                    var chart = new G2.Chart({
+                      id: 'c2',
+                      width : 1000,
+                      height : 500
+                    });
+                    chart.source(appearData, {
+                        time: {
+                          type: 'time',
+                          mask: 'yyyy-mm-dd HH:MM:ss', // 指定时间的输出格式
+                          alias: 'Time'
+                        },
+                        name: {
+                            alias: 'User'
+                        }
+                    });
+                    chart.axis('time',{
+                      grid: {
+                        line: {
+                          stroke: '#d9d9d9',
+                          'stroke-width': 2,
+                          'stroke-dasharray': [2, 6]
+                        }
+                      },
+                      formatter: function(dimValue) {
+                        return new Date(dimValue).toLocaleDateString()
+                      }, // 回调函数，用于格式化坐标轴上显示的文本信息
+
+                      gridAlign: 'left'
+                    });
+                    chart.point().position('time*name').color('name').opacity(0.5).shape('circle').tooltip('name');
+                    chart.render();
+
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
