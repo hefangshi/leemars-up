@@ -75,6 +75,7 @@
                           gridAlign: 'center'
                         });
                         leemarsUp.axis('dayTime',{
+                          titleOffset: 150,
                           formatter: function (dimValue) {
                             return new Date(whatEverDayStart + parseInt(dimValue, 10)).toLocaleTimeString()
                           }
