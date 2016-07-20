@@ -34,11 +34,11 @@
                     });
 
                     appearData = appearData.sort(function (a, b) {
-                        return a.time > b.time;
+                      return a.time > b.time;
                     });
 
                     const leemars = appearData.filter(function (data) {
-                      data.name === 'leemars528' && data.isFirstAppeal
+                      return data.name === 'leemars528' && data.isFirstAppeal
                     });
                     if (leemars.length > 1) {
                         const leemarsUp = new G2.Chart({
