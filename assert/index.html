@@ -41,7 +41,7 @@
                     if (leemars.length > 1) {
                         const leemarsUp = new G2.Chart({
                           id: 'c2',
-                          width : 1000,
+                          width : document.body.clientWidth,
                           height : 250
                         });
                         leemarsUp.source(leemars, {
@@ -88,7 +88,7 @@
 
                     var chart = new G2.Chart({
                       id: 'c2',
-                      width : 1000,
+                      width : document.body.clientWidth,
                       height : 500
                     });
                     chart.source(appearData, {
