@@ -10,17 +10,17 @@
     <div id="c2"></div>
     <div id="c3"></div>
     <script type="text/javascript">
-        $(document).ready(() => {
+        $(document).ready(function() {
             $.getJSON('/data/handler/UID_MAP?callback=?', function (data) {
                 const uidMap = data.data[0].uidmap;
-                $.getJSON('/data/handler/APPEAR_IN_GROUP_1462626?callback=?',function(data){
+                $.getJSON('/data/handler/APPEAR_IN_GROUP_1462626?callback=?',function (data) {
                     let appearData = [];
                     let whatEverDayStart = 0;
-                    data.data.forEach(appear => {
+                    data.data.forEach(function (appear) {
                         const users = Object.keys(appear.appearTime);
                         for (var i = 0; i < users.length; i++) {
                             const user = users[i];
-                            appear.appearTime[user].timestamp.forEach((time, index) => {
+                            appear.appearTime[user].timestamp.forEach(function (time, index) {
                                 whatEverDayStart = appear.day;
                                 appearData.push({
                                     name: uidMap[user],
@@ -29,15 +29,17 @@
                                     day: new Date(appear.day),
                                     dayTime: time
                                 });
-                            })
+                            });
                         }
                     });
 
-                    appearData = appearData.sort( (a,b) => {
+                    appearData = appearData.sort(function (a, b) {
                         return a.time > b.time;
                     });
 
-                    const leemars = appearData.filter( data => data.name === 'leemars528' && data.isFirstAppeal);
+                    const leemars = appearData.filter(function (data) {
+                      data.name === 'leemars528' && data.isFirstAppeal
+                    });
                     if (leemars.length > 1) {
                         const leemarsUp = new G2.Chart({
                           id: 'c2',
