@@ -14,8 +14,8 @@
             $.getJSON('/data/handler/UID_MAP?callback=?', function (data) {
                 const uidMap = data.data[0].uidmap;
                 $.getJSON('/data/handler/APPEAR_IN_GROUP_1462626?callback=?',function (data) {
-                    let appearData = [];
-                    let whatEverDayStart = 0;
+                    var appearData = [];
+                    var whatEverDayStart = 0;
                     data.data.forEach(function (appear) {
                         const users = Object.keys(appear.appearTime);
                         for (var i = 0; i < users.length; i++) {
