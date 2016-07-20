@@ -70,7 +70,7 @@
                               'stroke-dasharray': [2, 6]
                             }
                           },
-                          gridAlign: 'left'
+                          gridAlign: 'center'
                         });
                         leemarsUp.axis('dayTime',{
                           formatter: function (dimValue) {
@@ -113,7 +113,7 @@
                         return new Date(dimValue).toLocaleDateString()
                       }, // 回调函数，用于格式化坐标轴上显示的文本信息
 
-                      gridAlign: 'left'
+                      gridAlign: 'center'
                     });
                     chart.point().position('time*name').color('name').opacity(0.5).shape('circle').tooltip('name');
                     chart.render();

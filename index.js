@@ -118,14 +118,16 @@ class App {
 
 const app = new App('ws://10.94.169.106:8999', db, 8998);
 const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + GROUP, '*', GROUP);
-findLeemars.on('appear', e => {
-  if (e.isFirstAppear && e.id === LEEMARS_UID) {
-    app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
-  }
-  if (e.isFirstAppear && e.id === BERG_UID) {
-    app.talk(e.reply_to, e.type, '听说berg和群主有不可告人的秘♂密( ′_ゝ`)′_ゝ`)′_ゝ`)');
-  }
-});
+if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
+  findLeemars.on('appear', e => {
+    if (e.isFirstAppear && e.id === LEEMARS_UID) {
+      app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
+    }
+    if (e.isFirstAppear && e.id === BERG_UID) {
+      app.talk(e.reply_to, e.type, '听说berg和群主有不可告人的秘♂密( ′_ゝ`)′_ゝ`)′_ゝ`)');
+    }
+  });
+}
 
 app.use(findLeemars);
 app.use(new UidMapHandler('UID_MAP'));
