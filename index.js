@@ -9,6 +9,7 @@ const HOSTNAME = require('os').hostname();
 const LEEMARS_UID = 16888043;
 const BERG_UID = 13037728;
 const HEFANGSHI_UID = 11725261;
+const DAOSHI_UID = 644036624;
 const GROUP = 1462626;
 const AppearInGroupHandler = require('./lib/handlers/appear').AppearInGroupHandler;
 const UidMapHandler = require('./lib/handlers/uidmap');
@@ -121,6 +122,8 @@ const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + GROUP, '*', GR
 if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
   findLeemars.on('appear', e => {
     if (e.isFirstAppear && e.id === LEEMARS_UID) {
+      const nowTime = new Date(e.time);
+      app.talk(e.reply_to, e.type, `/vote ${nowTime.getHours()}:${nowTime.getMinutes()}`);
       app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
     }
     if (e.isFirstAppear && e.id === BERG_UID) {
