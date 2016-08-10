@@ -6,13 +6,10 @@ const Datastore = require('nedb');
 const OpenApi = require('./lib/openapi');
 const PERSISTENT_FILE = path.join(__dirname, 'PERSISTENT_FILE.json');
 const HOSTNAME = require('os').hostname();
-const LEEMARS_UID = 16888043;
-const BERG_UID = 13037728;
-const HEFANGSHI_UID = 11725261;
-const DAOSHI_UID = 644036624;
-const GROUP = 1462626;
+const constant = require('./lib/constant');
 const AppearInGroupHandler = require('./lib/handlers/appear').AppearInGroupHandler;
 const UidMapHandler = require('./lib/handlers/uidmap');
+const VoteHanlder = require('./lib/handlers/vote');
 
 const db = new Datastore({
   filename: PERSISTENT_FILE,
@@ -117,16 +114,21 @@ class App {
   }
 }
 
+const findLeemarsID = 'APPEAR_IN_GROUP_' + constant.THIRD_ROBOT_GROUP_ID;
 const app = new App('ws://10.94.169.106:8999', db, 8998);
-const findLeemars = new AppearInGroupHandler('APPEAR_IN_GROUP_' + GROUP, '*', GROUP);
+const findLeemars = new AppearInGroupHandler(
+  findLeemarsID,
+  '*',
+  constant.THIRD_ROBOT_GROUP_ID
+);
 if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
   findLeemars.on('appear', e => {
-    if (e.isFirstAppear && e.id === LEEMARS_UID) {
+    if (e.isFirstAppear && e.id === constant.LEEMARS_UID) {
       const nowTime = new Date(e.time);
       app.talk(e.reply_to, e.type, `/vote ${nowTime.getHours()}:${nowTime.getMinutes()}`);
       app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
     }
-    if (e.isFirstAppear && e.id === BERG_UID) {
+    if (e.isFirstAppear && e.id === constant.BERG_UID) {
       app.talk(e.reply_to, e.type, '听说berg和群主有不可告人的秘♂密( ′_ゝ`)′_ゝ`)′_ゝ`)');
     }
   });
@@ -134,11 +136,18 @@ if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
 
 app.use(findLeemars);
 app.use(new UidMapHandler('UID_MAP'));
+app.use(new VoteHanlder(
+    'VOTE_' + constant.LEEMARS_UID,
+    constant.THIRD_ROBOT_GROUP_ID,
+    constant.LEEMARS_UID,
+    findLeemarsID
+  )
+);
 
 app.load().then(() => {
   return app.run();
 }).then(() => {
   if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
-    app.talk(HEFANGSHI_UID, 1, `我在 ${HOSTNAME} 启动啦~`);
+    app.talk(constant.HEFANGSHI_UID, 1, `我在 ${HOSTNAME} 启动啦~`);
   }
 }).catch(console.error);
