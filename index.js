@@ -124,8 +124,8 @@ const findLeemars = new AppearInGroupHandler(
 if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
   findLeemars.on('appear', e => {
     if (e.isFirstAppear && e.id === constant.LEEMARS_UID) {
-      const nowTime = new Date(e.time);
-      app.talk(e.reply_to, e.type, `/vote ${nowTime.getHours()}:${nowTime.getMinutes()}`);
+      // const nowTime = new Date(e.time);
+      // app.talk(e.reply_to, e.type, `/vote ${nowTime.getHours()}:${nowTime.getMinutes()}`);
       app.talk(e.reply_to, e.type, '群主的铁♂拳制裁你们!!!');
     }
     if (e.isFirstAppear && e.id === constant.BERG_UID) {
