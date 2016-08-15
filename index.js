@@ -115,7 +115,7 @@ class App {
 }
 
 const findLeemarsID = 'APPEAR_IN_GROUP_' + constant.THIRD_ROBOT_GROUP_ID;
-const app = new App('ws://10.94.169.106:8999', db, 8998);
+const app = new App('ws://10.94.243.99:8999', db, 8998);
 const findLeemars = new AppearInGroupHandler(
   findLeemarsID,
   '*',
