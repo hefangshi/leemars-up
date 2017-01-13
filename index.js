@@ -10,6 +10,7 @@ const constant = require('./lib/constant');
 const AppearInGroupHandler = require('./lib/handlers/appear').AppearInGroupHandler;
 const UidMapHandler = require('./lib/handlers/uidmap');
 const VoteHanlder = require('./lib/handlers/vote');
+const AliveHanlder = require('./lib/handlers/alive');
 
 const db = new Datastore({
   filename: PERSISTENT_FILE,
@@ -134,6 +135,7 @@ if (HOSTNAME !== 'hefangshideMacBook-Pro.local') {
   });
 }
 
+app.use(new AliveHanlder('ALIVE'));
 app.use(findLeemars);
 app.use(new UidMapHandler('UID_MAP'));
 app.use(new VoteHanlder(
